@@ -19,16 +19,16 @@ export function notifyHarborChoiceConfirmed(choice: HarborChoiceKey): void {
   })
     .then(async (res) => {
       if (res.ok) return;
-      let msg = `${res.status}`;
+      let msg = "";
       try {
         const j = (await res.json()) as { error?: string; detail?: string; code?: string };
-        if (j.detail) msg += `: ${j.detail}`;
-        else if (j.error) msg += `: ${j.error}`;
-        if (j.code) msg += ` (${j.code})`;
+        if (j.detail) msg = j.detail;
+        else if (j.error) msg = j.error;
+        if (j.code) msg = msg ? `${msg} (${j.code})` : String(j.code);
       } catch {
-        /* ignore */
+        msg = "(non-JSON response)";
       }
-      console.warn("[notifyHarborChoice] API failed:", msg);
+      console.warn("[notifyHarborChoice] API failed:", res.status, res.url, msg || "no detail");
     })
     .catch(() => {
       console.warn("[notifyHarborChoice] network error — is /api reachable? (Vercel env + rewrite)");

@@ -225,6 +225,8 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
 
   /** After «Back to desk» from post flow — skip long zoom/fade-in so desk art is visible immediately. */
   const [deskEntranceInstant, setDeskEntranceInstant] = useState(false);
+  /** Μετά το farewell «Back to desk» με επιλογή — κρύβουμε φάκελο + invite copy, δείχνουμε επιβεβαίωση. */
+  const [deskFarewellChoiceSent, setDeskFarewellChoiceSent] = useState(false);
 
   const handleBackToDesk = useCallback((opts?: { farewellChoice?: HarborChoiceKey }) => {
     setDeskEntranceInstant(true);
@@ -233,16 +235,19 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
     setHarborViaEnvelope(false);
     setDeskAct("desk");
     if (opts?.farewellChoice) {
+      setDeskFarewellChoiceSent(true);
       setDeskOverlayOrganicReveal(true);
       setDeskOverlayRevealKey((k) => k + 1);
       setDeskOptionOverlay(opts.farewellChoice);
     } else {
+      setDeskFarewellChoiceSent(false);
       setDeskOverlayOrganicReveal(false);
     }
   }, []);
 
   const handleHarborFlowReplay = useCallback(() => {
     setDeskEntranceInstant(false);
+    setDeskFarewellChoiceSent(false);
     setHarborChoice(null);
     setHarborFlowKey((k) => k + 1);
     setHarborViaEnvelope(true);
@@ -417,16 +422,19 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
           transformStyle: reducedMotion ? undefined : "preserve-3d",
         }}
       >
-        <EnvelopeHotspot
-          reducedMotion={reducedMotion}
-          onOpen={() => {
-            setDeskEntranceInstant(false);
-            setHarborViaEnvelope(true);
-            setDeskAct("burst");
-            setDeskOverlayOrganicReveal(false);
-            setDeskOptionOverlay(null);
-          }}
-        />
+        {!deskFarewellChoiceSent ? (
+          <EnvelopeHotspot
+            reducedMotion={reducedMotion}
+            onOpen={() => {
+              setDeskEntranceInstant(false);
+              setDeskFarewellChoiceSent(false);
+              setHarborViaEnvelope(true);
+              setDeskAct("burst");
+              setDeskOverlayOrganicReveal(false);
+              setDeskOptionOverlay(null);
+            }}
+          />
+        ) : null}
       </motion.div>
     </div>
   );
@@ -506,11 +514,20 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
               }
             >
               <div className="desk-cinematic-narrative__sheet" aria-hidden />
-              <p className="desk-cinematic-narrative__copy">
-                A small note, left here for you—no quiz, no clock.
-                <br />
-                Open the envelope whenever you&apos;re in the mood to see what&apos;s inside.
-              </p>
+              {deskFarewellChoiceSent ? (
+                <div className="desk-cinematic-narrative__copy space-y-3 text-balance">
+                  <p className="font-medium tracking-tight">Η επιλογή σου στάλθηκε στον Kouki.</p>
+                  <p className="text-[0.92em] opacity-[0.92]">
+                    Σε ευχαριστούμε που αφιέρωσες λίγο χρόνο εδώ — σημαίνει πολύ. Καλή συνέχεια.
+                  </p>
+                </div>
+              ) : (
+                <p className="desk-cinematic-narrative__copy">
+                  A small note, left here for you—no quiz, no clock.
+                  <br />
+                  Open the envelope whenever you&apos;re in the mood to see what&apos;s inside.
+                </p>
+              )}
             </motion.div>
           </div>
         </>

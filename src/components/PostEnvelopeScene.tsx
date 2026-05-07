@@ -298,7 +298,7 @@ export function PostEnvelopeScene({
     setTextOverlaysHidden(false);
 
     let cancelled = false;
-    let endTimer: ReturnType<typeof setTimeout> | undefined;
+    let endTimer: number | undefined;
 
     const runCrossfade = () => {
       if (cancelled) return;
@@ -366,7 +366,7 @@ export function PostEnvelopeScene({
     setScene3OverlayRevealReady(false);
 
     let cancelled = false;
-    let endTimer: ReturnType<typeof setTimeout> | undefined;
+    let endTimer: number | undefined;
 
     const runCrossfade = () => {
       if (cancelled) return;

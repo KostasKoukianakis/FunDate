@@ -64,11 +64,11 @@ export default async function handler(req: Request): Promise<Response> {
     });
   }
 
-  const allowed = process.env.NOTIFY_ALLOWED_ORIGINS?.split(",").map((s) => s.trim()).filter(Boolean);
+  const allowed = process.env.NOTIFY_ALLOWED_ORIGINS?.split(",").map((s: string) => s.trim()).filter(Boolean);
   if (allowed && allowed.length > 0) {
     const origin = req.headers.get("origin");
     /* Μόνο όταν υπάρχει Origin (π.χ. browser)· αλλιώς same-origin / curl δεν μπλοκάρονται λάθος. */
-    if (origin && !allowed.some((o) => origin === o)) {
+    if (origin && !allowed.some((o: string) => origin === o)) {
       return new Response(JSON.stringify({ ok: false, error: "Forbidden" }), {
         status: 403,
         headers: baseHeaders,

@@ -5,7 +5,7 @@
   "installCommand": "npm install",
   "framework": "vite",
   "functions": {
-    "api/**/*.ts": {
+    "api/notify-harbor-choice.ts": {
       "runtime": "nodejs20.x"
     }
   },

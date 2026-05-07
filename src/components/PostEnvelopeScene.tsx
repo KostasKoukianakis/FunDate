@@ -792,6 +792,11 @@ export function PostEnvelopeScene({
   const showWpBand = harborPick !== null && scene3Mode && scene3OverlayRevealReady;
   const showWpStack = showWpBand && !isWpFarewell;
 
+  const videoAIsScene2 = videoASrc === SCENE_2_SRC;
+  const videoBIsScene2 = videoBSrc === SCENE_2_SRC;
+  const videoAIsHarbor = videoASrc === HARBOR_VIDEO_SRC;
+  const videoBIsHarbor = videoBSrc === HARBOR_VIDEO_SRC;
+
   return (
     <>
       <motion.div
@@ -821,88 +826,60 @@ export function PostEnvelopeScene({
         }}
       >
         <motion.div className="absolute inset-0" style={{ opacity: opA }}>
-          {videoASrc === SCENE_2_SRC ? (
-            <div className="absolute inset-0 overflow-hidden">
-              <video
-                ref={refA}
-                key={videoASrc}
-                className="absolute left-0 right-0 w-full object-cover object-top"
-                style={{
-                  top: -SCENE2_TOP_CROP_PX,
-                  height: `calc(100% + ${SCENE2_TOP_CROP_PX}px)`,
-                }}
-                src={videoASrc}
-                muted
-                playsInline
-                preload="auto"
-                aria-hidden
-                onTimeUpdate={onTime("a")}
-                onEnded={onEndedA}
-                onError={() => onVideoError("a")}
-              />
-            </div>
-          ) : videoASrc === SCENE_3_SRC ? (
+          {/*
+            Single <video> per slot so src changes (e.g. scene_3 → harbor on «I changed my mind») update in-place
+            instead of remounting a new tag — avoids ~1s blank while the element re-buffers.
+          */}
+          <div className="absolute inset-0 overflow-hidden">
             <video
               ref={refA}
-              key={videoASrc}
-              className="absolute inset-0 h-full w-full object-cover"
               src={videoASrc}
-              autoPlay
+              className={
+                videoAIsScene2
+                  ? "absolute left-0 right-0 w-full object-cover object-top"
+                  : "absolute inset-0 h-full w-full object-cover"
+              }
+              style={
+                videoAIsScene2
+                  ? {
+                      top: -SCENE2_TOP_CROP_PX,
+                      height: `calc(100% + ${SCENE2_TOP_CROP_PX}px)`,
+                    }
+                  : undefined
+              }
+              poster={videoAIsHarbor ? HARBOR_VIDEO_POSTER_SRC : undefined}
+              autoPlay={videoAIsHarbor || videoASrc === SCENE_3_SRC}
               muted
               playsInline
               preload="auto"
               aria-hidden
+              onLoadedData={videoAIsHarbor ? onLoadedA : undefined}
               onTimeUpdate={onTime("a")}
               onEnded={onEndedA}
               onError={() => onVideoError("a")}
             />
-          ) : (
-            <video
-              ref={refA}
-              key={videoASrc}
-              className="absolute inset-0 h-full w-full object-cover"
-              src={videoASrc}
-              poster={videoASrc === HARBOR_VIDEO_SRC ? HARBOR_VIDEO_POSTER_SRC : undefined}
-              autoPlay={videoASrc === HARBOR_VIDEO_SRC}
-              muted
-              playsInline
-              preload="auto"
-              aria-hidden
-              onLoadedData={videoASrc === HARBOR_VIDEO_SRC ? onLoadedA : undefined}
-              onTimeUpdate={onTime("a")}
-              onEnded={onEndedA}
-              onError={() => onVideoError("a")}
-            />
-          )}
+          </div>
         </motion.div>
         <motion.div className="absolute inset-0" style={{ opacity: opB }}>
-          {videoBSrc === SCENE_2_SRC ? (
-            <div className="absolute inset-0 overflow-hidden">
-              <video
-                ref={refB}
-                key={videoBSrc}
-                className="absolute left-0 right-0 w-full object-cover object-top"
-                style={{
-                  top: -SCENE2_TOP_CROP_PX,
-                  height: `calc(100% + ${SCENE2_TOP_CROP_PX}px)`,
-                }}
-                src={videoBSrc}
-                muted
-                playsInline
-                preload="auto"
-                aria-hidden
-                onTimeUpdate={onTime("b")}
-                onEnded={onEndedB}
-                onError={() => onVideoError("b")}
-              />
-            </div>
-          ) : videoBSrc === SCENE_3_SRC ? (
+          <div className="absolute inset-0 overflow-hidden">
             <video
               ref={refB}
-              key={videoBSrc}
-              className="absolute inset-0 h-full w-full object-cover"
               src={videoBSrc}
-              autoPlay
+              className={
+                videoBIsScene2
+                  ? "absolute left-0 right-0 w-full object-cover object-top"
+                  : "absolute inset-0 h-full w-full object-cover"
+              }
+              style={
+                videoBIsScene2
+                  ? {
+                      top: -SCENE2_TOP_CROP_PX,
+                      height: `calc(100% + ${SCENE2_TOP_CROP_PX}px)`,
+                    }
+                  : undefined
+              }
+              poster={videoBIsHarbor ? HARBOR_VIDEO_POSTER_SRC : undefined}
+              autoPlay={videoBSrc === SCENE_3_SRC}
               muted
               playsInline
               preload="auto"
@@ -911,22 +888,7 @@ export function PostEnvelopeScene({
               onEnded={onEndedB}
               onError={() => onVideoError("b")}
             />
-          ) : (
-            <video
-              ref={refB}
-              key={videoBSrc}
-              className="absolute inset-0 h-full w-full object-cover"
-              src={videoBSrc}
-              poster={videoBSrc === HARBOR_VIDEO_SRC ? HARBOR_VIDEO_POSTER_SRC : undefined}
-              muted
-              playsInline
-              preload="auto"
-              aria-hidden
-              onTimeUpdate={onTime("b")}
-              onEnded={onEndedB}
-              onError={() => onVideoError("b")}
-            />
-          )}
+          </div>
         </motion.div>
       </motion.div>
 

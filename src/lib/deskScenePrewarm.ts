@@ -4,6 +4,8 @@
  */
 export const DESK_SCENE_PREWARM_URLS = [
   "/desk.png",
+  /** Harbor `<video>` poster + LoadingGate hero still — avoids blank frame while MP4 decodes. */
+  "/hero.webp",
   "/envelope.webp",
   "/envelope_hover.webp",
   "/envelope.svg",

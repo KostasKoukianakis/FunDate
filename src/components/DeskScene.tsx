@@ -223,7 +223,11 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
     return detach;
   }, [deskMusicAutoplayBlocked, musicOn, musicVolume]);
 
+  /** After «Back to desk» from post flow — skip long zoom/fade-in so desk art is visible immediately. */
+  const [deskEntranceInstant, setDeskEntranceInstant] = useState(false);
+
   const handleBackToDesk = useCallback((opts?: { farewellChoice?: HarborChoiceKey }) => {
+    setDeskEntranceInstant(true);
     setHarborChoice(null);
     setHarborFlowKey((k) => k + 1);
     setHarborViaEnvelope(false);
@@ -238,6 +242,7 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
   }, []);
 
   const handleHarborFlowReplay = useCallback(() => {
+    setDeskEntranceInstant(false);
     setHarborChoice(null);
     setHarborFlowKey((k) => k + 1);
     setHarborViaEnvelope(true);
@@ -248,7 +253,7 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
 
   useEffect(() => {
     void applyMusic();
-  }, [applyMusic]);
+  }, [applyMusic, deskAct]);
 
   useEffect(() => {
     const air = airAmbientRef.current;
@@ -406,6 +411,7 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
         <EnvelopeHotspot
           reducedMotion={reducedMotion}
           onOpen={() => {
+            setDeskEntranceInstant(false);
             setHarborViaEnvelope(true);
             setDeskAct("burst");
             setDeskOverlayOrganicReveal(false);
@@ -458,12 +464,18 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
               <motion.div
                 className="pointer-events-none absolute inset-0"
                 style={{ transformOrigin: "50% 46%" }}
-                initial={reducedMotion ? { opacity: 1, scale: 1 } : { opacity: 0, scale: SCENE_ZOOM_START }}
+                initial={
+                  reducedMotion || deskEntranceInstant
+                    ? { opacity: 1, scale: 1 }
+                    : { opacity: 0, scale: SCENE_ZOOM_START }
+                }
                 animate={{ opacity: 1, scale: 1 }}
                 transition={
                   reducedMotion
                     ? { duration: 0 }
-                    : { duration: SCENE_REVEAL_DURATION, ease: DESK_REVEAL_EASE }
+                    : deskEntranceInstant
+                      ? { duration: 0 }
+                      : { duration: SCENE_REVEAL_DURATION, ease: DESK_REVEAL_EASE }
                 }
               >
                 {sceneStack}
@@ -474,9 +486,15 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[45] flex justify-center px-5 pb-[calc(env(safe-area-inset-bottom,0px)+clamp(5.25rem,18dvh,11rem))] pt-24 sm:pb-[calc(env(safe-area-inset-bottom,0px)+clamp(6rem,20dvh,12rem))] sm:pt-28">
             <motion.div
               className="desk-cinematic-narrative relative w-full max-w-[min(72rem,96vw)] text-center"
-              initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 22 }}
+              initial={reducedMotion || deskEntranceInstant ? { opacity: 1, y: 0 } : { opacity: 0, y: 22 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={narrativeRevealTransition(reducedMotion)}
+              transition={
+                reducedMotion
+                  ? { duration: 0 }
+                  : deskEntranceInstant
+                    ? { duration: 0 }
+                    : narrativeRevealTransition(reducedMotion)
+              }
             >
               <div className="desk-cinematic-narrative__sheet" aria-hidden />
               <p className="desk-cinematic-narrative__copy">

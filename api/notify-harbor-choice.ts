@@ -1,14 +1,15 @@
 /**
- * Vercel Edge function — sends you an email when someone confirms «I'm sure» with their harbor choice.
+ * Vercel Serverless — sends you an email when someone confirms «I'm sure» with their harbor choice.
+ * Uses the official Resend SDK (`resend` package). API key only via env — never commit keys.
  *
  * Env (Vercel → Project → Settings → Environment Variables):
- * - RESEND_API_KEY — from https://resend.com/api-keys
- * - NOTIFY_FROM_EMAIL — verified sender, e.g. `Date Idea <notify@yourdomain.com>`
+ * - RESEND_API_KEY — https://resend.com/api-keys
+ * - NOTIFY_FROM_EMAIL — optional; defaults to `onboarding@resend.dev` (Resend test sender; use your verified domain in production)
  * - NOTIFY_TO_EMAIL — optional; defaults to kostaskoukianakis72@gmail.com if unset
- * - NOTIFY_ALLOWED_ORIGINS — optional comma list; if set, only these Origins may POST (e.g. https://your-app.vercel.app,http://localhost:5173)
+ * - NOTIFY_ALLOWED_ORIGINS — optional comma list; if set, only these Origins may POST
  */
 
-export const config = { runtime: "edge" };
+import { Resend } from "resend";
 
 const CHOICES = ["shore", "feast", "drift"] as const;
 type Choice = (typeof CHOICES)[number];
@@ -20,6 +21,8 @@ const LABELS: Record<Choice, string> = {
 };
 
 const DEFAULT_TO = "kostaskoukianakis72@gmail.com";
+/** Resend’s shared test inbox; only works with `onboarding@resend.dev` and Resend’s rules. Use your domain sender in production. */
+const DEFAULT_FROM = "onboarding@resend.dev";
 
 function isChoice(x: unknown): x is Choice {
   return typeof x === "string" && (CHOICES as readonly string[]).includes(x);
@@ -79,11 +82,11 @@ export default async function handler(req: Request): Promise<Response> {
     });
   }
 
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.NOTIFY_FROM_EMAIL;
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  const from = process.env.NOTIFY_FROM_EMAIL?.trim() || DEFAULT_FROM;
   const to = process.env.NOTIFY_TO_EMAIL?.trim() || DEFAULT_TO;
 
-  if (!apiKey || !from) {
+  if (!apiKey) {
     return new Response(JSON.stringify({ ok: false, error: "Server not configured" }), {
       status: 503,
       headers: baseHeaders,
@@ -96,16 +99,15 @@ export default async function handler(req: Request): Promise<Response> {
 <p><strong>Choice:</strong> ${label}<br /><code>${choice}</code></p>
 <p style="color:#666;font-size:12px">${new Date().toISOString()}</p>`;
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ from, to: [to], subject, html }),
+  const resend = new Resend(apiKey);
+  const { error } = await resend.emails.send({
+    from,
+    to,
+    subject,
+    html,
   });
 
-  if (!res.ok) {
+  if (error) {
     return new Response(JSON.stringify({ ok: false, error: "Email provider error" }), {
       status: 502,
       headers: baseHeaders,

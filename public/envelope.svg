@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="280" viewBox="0 0 400 280" fill="none">
+  <defs>
+    <linearGradient id="paper" x1="80" y1="40" x2="340" y2="260" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#faf3e6"/>
+      <stop offset="0.45" stop-color="#f0e4d2"/>
+      <stop offset="1" stop-color="#e8d9c4"/>
+    </linearGradient>
+    <linearGradient id="shadow" x1="200" y1="120" x2="200" y2="268" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#c4a574" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#8b6914" stop-opacity="0.08"/>
+    </linearGradient>
+    <filter id="soft" x="-8%" y="-8%" width="116%" height="116%">
+      <feGaussianBlur stdDeviation="1.2"/>
+    </filter>
+  </defs>
+  <!-- Body -->
+  <path fill="url(#paper)" stroke="#b8956a" stroke-width="1.5" d="M48 88h304v168a12 12 0 0 1-12 12H60a12 12 0 0 1-12-12V88z"/>
+  <path fill="url(#shadow)" d="M52 152 200 218 348 152v96a8 8 0 0 1-8 8H60a8 8 0 0 1-8-8v-96z" opacity="0.75"/>
+  <!-- Back flap hint -->
+  <path fill="#ebe1cf" stroke="#b8956a" stroke-width="1.2" d="M48 88 200 168 352 88"/>
+  <!-- Front triangular flap -->
+  <path fill="#f7efe3" stroke="#b8956a" stroke-width="1.5" d="M48 88 200 178 352 88"/>
+  <path fill="#faf6ee" stroke="#c9a66d" stroke-width="1" filter="url(#soft)" d="M72 92 200 166 328 92"/>
+  <!-- Wax seal -->
+  <ellipse cx="200" cy="118" rx="22" ry="20" fill="#6b2d3c"/>
+  <ellipse cx="200" cy="116" rx="18" ry="16" fill="#8b3a48"/>
+  <circle cx="200" cy="114" r="6" fill="#d4a574" opacity="0.6"/>
+</svg>

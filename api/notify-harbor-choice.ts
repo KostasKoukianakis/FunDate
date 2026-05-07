@@ -38,7 +38,11 @@ function corsHeaders(): HeadersInit {
   };
 }
 
-export default async function handler(req: Request): Promise<Response> {
+/**
+ * Vercel Node functions expect a Web handler on `fetch` (not a bare default function).
+ * @see https://vercel.com/docs/functions/runtimes/node-js
+ */
+async function handleRequest(req: Request): Promise<Response> {
   const baseHeaders = { ...corsHeaders(), "Content-Type": "application/json" };
 
   if (req.method === "OPTIONS") {
@@ -137,3 +141,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: baseHeaders });
 }
+
+export default {
+  fetch: handleRequest,
+};

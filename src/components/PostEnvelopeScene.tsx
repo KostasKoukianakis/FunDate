@@ -1142,7 +1142,7 @@ export function PostEnvelopeScene({
       {onReplay ? (
         <div className={`${replayHudAnchorClass} flex flex-col items-start gap-2`}>
           <SceneReplayButton reducedMotion={reducedMotion} onReplay={handleHudReplay} />
-          {/* Skip-to-scene-3 HUD disabled for ship build
+          {/* Scene skip-to-end (jump to scene_3 before GG/WP) — disabled for now
           {!scene3Mode ? <SceneSkipToEndButton reducedMotion={reducedMotion} onSkip={skipToFinalScene} /> : null}
           */}
         </div>

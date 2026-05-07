@@ -9,6 +9,8 @@
  * - NOTIFY_ALLOWED_ORIGINS — optional comma list; if set, only these Origins may POST
  * - NOTIFY_CHOOSER_NAME — optional; used in the email if the POST body omits `chooserName` (e.g. Electra)
  *
+ * Guest IP in the email is taken from `x-forwarded-for` / Vercel edge headers (best-effort, may be a proxy or mobile NAT).
+ *
  * Node: set Project → Settings → General → Node.js Version to **20.x** (the `resend` package requires Node ≥ 20).
  */
 
@@ -66,6 +68,24 @@ function pickChooserName(body: unknown): string {
   const fromEnv = process.env.NOTIFY_CHOOSER_NAME?.trim().replace(/\s+/g, " ").slice(0, 80);
   if (fromEnv && fromEnv.length > 0) return fromEnv;
   return "Your guest";
+}
+
+/** Best-effort client IP from edge / proxy headers (Vercel sets these); not cryptographically verified. */
+function guestIpFromRequest(req: Request): string {
+  const firstHop = (value: string | null): string | undefined => {
+    if (!value) return undefined;
+    const part = value.split(",")[0]?.trim();
+    if (!part || part.length > 128) return undefined;
+    if (/[\r\n<>]/.test(part)) return undefined;
+    return part;
+  };
+
+  return (
+    firstHop(req.headers.get("x-forwarded-for")) ??
+    firstHop(req.headers.get("x-vercel-forwarded-for")) ??
+    req.headers.get("x-real-ip")?.trim() ??
+    "unknown"
+  );
 }
 
 const DEFAULT_TO = "kostaskoukianakis72@gmail.com";
@@ -160,6 +180,7 @@ async function handleRequest(req: Request): Promise<Response> {
 
   const chooser = pickChooserName(body);
   const chooserSubject = subjectSnippet(chooser);
+  const guestIp = guestIpFromRequest(req);
   const n = OPTION_INDEX[choice];
   const ord = ordinal(n);
   const title = OPTION_TITLE[choice];
@@ -167,6 +188,7 @@ async function handleRequest(req: Request): Promise<Response> {
   const subject = `Date Idea — ${chooserSubject} chose the ${ord} option`;
   const html = `<p><strong>${escapeHtml(chooser)}</strong> chose the <strong>${ord} option</strong> — ${escapeHtml(title)}.</p>
 <p style="color:#444;font-size:14px;margin:12px 0 0 0">${escapeHtml(label)}</p>
+<p style="color:#333;font-size:13px;margin:12px 0 0 0"><strong>Guest IP:</strong> ${escapeHtml(guestIp)}</p>
 <p style="color:#666;font-size:12px;margin:16px 0 0 0"><code>${choice}</code> · ${new Date().toISOString()}</p>`;
 
   const resend = new Resend(apiKey);

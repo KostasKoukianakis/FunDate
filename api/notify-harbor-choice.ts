@@ -7,6 +7,8 @@
  * - NOTIFY_FROM_EMAIL — optional; defaults to `onboarding@resend.dev` (Resend test sender; use your verified domain in production)
  * - NOTIFY_TO_EMAIL — optional; defaults to kostaskoukianakis72@gmail.com if unset
  * - NOTIFY_ALLOWED_ORIGINS — optional comma list; if set, only these Origins may POST
+ *
+ * Node: set Project → Settings → General → Node.js Version to **20.x** (the `resend` package requires Node ≥ 20).
  */
 
 import { Resend } from "resend";

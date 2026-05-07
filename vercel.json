@@ -4,10 +4,5 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
-  "functions": {
-    "api/notify-harbor-choice.ts": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
 }

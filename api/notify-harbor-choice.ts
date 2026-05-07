@@ -31,7 +31,7 @@ function isChoice(x: unknown): x is Choice {
 function corsHeaders(): HeadersInit {
   return {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   };
 }
@@ -43,6 +43,18 @@ export default async function handler(req: Request): Promise<Response> {
     return new Response(null, { status: 204, headers: baseHeaders });
   }
 
+  /** Γρήγορο έλεγχο από browser / curl: GET https://…/api/notify-harbor-choice */
+  if (req.method === "GET") {
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        route: "notify-harbor-choice",
+        hasResendKey: Boolean(process.env.RESEND_API_KEY?.trim()),
+      }),
+      { status: 200, headers: baseHeaders },
+    );
+  }
+
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ ok: false, error: "Method not allowed" }), {
       status: 405,
@@ -52,8 +64,9 @@ export default async function handler(req: Request): Promise<Response> {
 
   const allowed = process.env.NOTIFY_ALLOWED_ORIGINS?.split(",").map((s) => s.trim()).filter(Boolean);
   if (allowed && allowed.length > 0) {
-    const origin = req.headers.get("origin") ?? "";
-    if (!origin || !allowed.some((o) => origin === o)) {
+    const origin = req.headers.get("origin");
+    /* Μόνο όταν υπάρχει Origin (π.χ. browser)· αλλιώς same-origin / curl δεν μπλοκάρονται λάθος. */
+    if (origin && !allowed.some((o) => origin === o)) {
       return new Response(JSON.stringify({ ok: false, error: "Forbidden" }), {
         status: 403,
         headers: baseHeaders,
@@ -108,10 +121,16 @@ export default async function handler(req: Request): Promise<Response> {
   });
 
   if (error) {
-    return new Response(JSON.stringify({ ok: false, error: "Email provider error" }), {
-      status: 502,
-      headers: baseHeaders,
-    });
+    console.error("[notify-harbor-choice] Resend:", error.name, error.message);
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: "Email provider error",
+        detail: error.message,
+        code: error.name,
+      }),
+      { status: 502, headers: baseHeaders },
+    );
   }
 
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: baseHeaders });

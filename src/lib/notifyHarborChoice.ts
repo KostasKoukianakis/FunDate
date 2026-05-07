@@ -16,7 +16,21 @@ export function notifyHarborChoiceConfirmed(choice: HarborChoiceKey): void {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ choice }),
-  }).catch(() => {
-    /* network / missing API in local Vite — ignore */
-  });
+  })
+    .then(async (res) => {
+      if (res.ok) return;
+      let msg = `${res.status}`;
+      try {
+        const j = (await res.json()) as { error?: string; detail?: string; code?: string };
+        if (j.detail) msg += `: ${j.detail}`;
+        else if (j.error) msg += `: ${j.error}`;
+        if (j.code) msg += ` (${j.code})`;
+      } catch {
+        /* ignore */
+      }
+      console.warn("[notifyHarborChoice] API failed:", msg);
+    })
+    .catch(() => {
+      console.warn("[notifyHarborChoice] network error — is /api reachable? (Vercel env + rewrite)");
+    });
 }

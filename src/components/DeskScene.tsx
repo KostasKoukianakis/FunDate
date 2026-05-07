@@ -321,6 +321,9 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
           alt=""
           className="pointer-events-none h-full w-full object-cover select-none"
           draggable={false}
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
         />
         {deskOverlayLayer}
       </div>
@@ -332,6 +335,9 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
         alt=""
         aria-hidden
         draggable={false}
+        loading="eager"
+        decoding="async"
+        fetchPriority="high"
         className="pointer-events-none absolute inset-0 h-full w-full scale-[1.04] object-cover select-none [filter:blur(11px)]"
       />
       <motion.div
@@ -351,6 +357,9 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
             alt=""
             className="pointer-events-none h-full w-full object-cover select-none"
             draggable={false}
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
           />
           {deskOverlayLayer}
         </div>

@@ -15,6 +15,9 @@ dist-ssr
 .env.*
 !.env.example
 
+# Optional local backup of the ~60MB scene_3 encode (app uses `scene_3_old.mp4`).
+public/scene_3_heavy_backup.mp4
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

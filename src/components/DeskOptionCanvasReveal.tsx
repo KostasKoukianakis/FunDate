@@ -286,6 +286,9 @@ export function DeskOptionCanvasReveal({
         alt=""
         aria-hidden
         draggable={false}
+        loading="eager"
+        decoding="async"
+        fetchPriority="high"
         className={NATIVE_OVERLAY_IMG_CLASS}
         style={objectPosition ? { objectPosition } : undefined}
       />
@@ -300,6 +303,9 @@ export function DeskOptionCanvasReveal({
         alt=""
         aria-hidden
         draggable={false}
+        loading="eager"
+        decoding="async"
+        fetchPriority="high"
         className={NATIVE_OVERLAY_IMG_CLASS}
         style={objectPosition ? { objectPosition } : undefined}
       />

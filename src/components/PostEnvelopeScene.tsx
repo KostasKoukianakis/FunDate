@@ -41,7 +41,7 @@ const HARBOR_VIDEO_SRC = "/harbor_scene.mp4";
 /** Still frame until first MP4 frame (match `public/harbor_scene.webp`). */
 const HARBOR_VIDEO_POSTER_SRC = "/harbor_scene.webp";
 const SCENE_2_SRC = "/scene_2.mp4";
-const SCENE_3_SRC = "/scene_3.mp4";
+const SCENE_3_SRC = "/scene_3_old.mp4";
 /** Pixels: κρύβουμε top watermark — overflow + shift (όχι clip-path, για να μη φαίνεται μαύρο). */
 const SCENE2_TOP_CROP_PX = 300;
 const CROSSFADE_SEC = 0.9;
@@ -803,7 +803,7 @@ export function PostEnvelopeScene({
       <>
         <div className="flex min-h-dvh w-full items-center justify-center bg-black px-6 text-center text-sm text-white/60">
           <p>
-            Δεν φορτώθηκε το <code className="text-amber-200/90">public/scene_3.mp4</code>. Βάλε το αρχείο στο{" "}
+            Δεν φορτώθηκε το <code className="text-amber-200/90">public/scene_3_old.mp4</code>. Βάλε το αρχείο στο{" "}
             <code className="text-amber-200/90">public/</code> folder.
           </p>
         </div>

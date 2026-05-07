@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { AnimatePresence, useReducedMotion } from "framer-motion";
+import { DeskOptionImagePrefetch } from "./components/DeskOptionImagePrefetch";
 import { DeskScene } from "./components/DeskScene";
 import { HarborVideoPrefetch } from "./components/HarborVideoPrefetch";
 import { LoadingGate } from "./components/LoadingGate";
@@ -37,6 +38,7 @@ export default function App() {
         aria-hidden
       />
       <OrbCursor />
+      <DeskOptionImagePrefetch />
       {sceneReady ? (
         <>
           <HarborVideoPrefetch />

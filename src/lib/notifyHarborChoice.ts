@@ -12,10 +12,15 @@ function endpoint(): string {
 
 /** Fire-and-forget: tells the deployed API to email you the confirmed harbor choice. */
 export function notifyHarborChoiceConfirmed(choice: HarborChoiceKey): void {
+  const rawName = import.meta.env.VITE_NOTIFY_CHOOSER_NAME as string | undefined;
+  const chooserName = typeof rawName === "string" ? rawName.trim().replace(/\s+/g, " ").slice(0, 80) : "";
+  const body: { choice: HarborChoiceKey; chooserName?: string } = { choice };
+  if (chooserName.length > 0) body.chooserName = chooserName;
+
   void fetch(endpoint(), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ choice }),
+    body: JSON.stringify(body),
   })
     .then(async (res) => {
       if (res.ok) return;

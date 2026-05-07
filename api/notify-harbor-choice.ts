@@ -7,6 +7,7 @@
  * - NOTIFY_FROM_EMAIL — optional; defaults to `onboarding@resend.dev` (Resend test sender; use your verified domain in production)
  * - NOTIFY_TO_EMAIL — optional; defaults to kostaskoukianakis72@gmail.com if unset
  * - NOTIFY_ALLOWED_ORIGINS — optional comma list; if set, only these Origins may POST
+ * - NOTIFY_CHOOSER_NAME — optional; used in the email if the POST body omits `chooserName` (e.g. Electra)
  *
  * Node: set Project → Settings → General → Node.js Version to **20.x** (the `resend` package requires Node ≥ 20).
  */
@@ -21,6 +22,51 @@ const LABELS: Record<Choice, string> = {
   feast: "Feast — another night in",
   drift: "Drift — ask me again later",
 };
+
+/** Same order as the on-screen list (1st / 2nd / 3rd option). */
+const OPTION_INDEX: Record<Choice, 1 | 2 | 3> = {
+  shore: 1,
+  feast: 2,
+  drift: 3,
+};
+
+const OPTION_TITLE: Record<Choice, string> = {
+  shore: "Let's meet outside",
+  feast: "Another night in",
+  drift: "Ask me again later",
+};
+
+function ordinal(n: 1 | 2 | 3): string {
+  return n === 1 ? "1st" : n === 2 ? "2nd" : "3rd";
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** Safe one-line snippet for email subject (no newlines / angle brackets). */
+function subjectSnippet(s: string): string {
+  const t = s.replace(/[\r\n<>]/g, "").trim().slice(0, 60);
+  return t.length > 0 ? t : "Your guest";
+}
+
+function pickChooserName(body: unknown): string {
+  const fromPost =
+    body && typeof body === "object" && body !== null && "chooserName" in body
+      ? (body as { chooserName: unknown }).chooserName
+      : undefined;
+  if (typeof fromPost === "string") {
+    const t = fromPost.trim().replace(/\s+/g, " ").slice(0, 80);
+    if (t.length > 0) return t;
+  }
+  const fromEnv = process.env.NOTIFY_CHOOSER_NAME?.trim().replace(/\s+/g, " ").slice(0, 80);
+  if (fromEnv && fromEnv.length > 0) return fromEnv;
+  return "Your guest";
+}
 
 const DEFAULT_TO = "kostaskoukianakis72@gmail.com";
 /** Resend’s shared test inbox; only works with `onboarding@resend.dev` and Resend’s rules. Use your domain sender in production. */
@@ -112,11 +158,16 @@ async function handleRequest(req: Request): Promise<Response> {
     });
   }
 
+  const chooser = pickChooserName(body);
+  const chooserSubject = subjectSnippet(chooser);
+  const n = OPTION_INDEX[choice];
+  const ord = ordinal(n);
+  const title = OPTION_TITLE[choice];
   const label = LABELS[choice];
-  const subject = `Date Idea — harbor choice: ${choice}`;
-  const html = `<p>Someone clicked <strong>I'm sure</strong> on <em>Date Idea</em>.</p>
-<p><strong>Choice:</strong> ${label}<br /><code>${choice}</code></p>
-<p style="color:#666;font-size:12px">${new Date().toISOString()}</p>`;
+  const subject = `Date Idea — ${chooserSubject} chose the ${ord} option`;
+  const html = `<p><strong>${escapeHtml(chooser)}</strong> chose the <strong>${ord} option</strong> — ${escapeHtml(title)}.</p>
+<p style="color:#444;font-size:14px;margin:12px 0 0 0">${escapeHtml(label)}</p>
+<p style="color:#666;font-size:12px;margin:16px 0 0 0"><code>${choice}</code> · ${new Date().toISOString()}</p>`;
 
   const resend = new Resend(apiKey);
   const { error } = await resend.emails.send({

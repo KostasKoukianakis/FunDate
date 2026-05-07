@@ -172,6 +172,12 @@ export function PostEnvelopeScene({
   const [scene2CenterRevealReady, setScene2CenterRevealReady] = useState(false);
   const [textOverlaysHidden, setTextOverlaysHidden] = useState(false);
 
+  /** `harbor_scene.webp` on top of `<video>` until playback — poster/underlay fail when MP4 shows black before decode. */
+  const [showHarborStillA, setShowHarborStillA] = useState(false);
+  const [showHarborStillB, setShowHarborStillB] = useState(false);
+  const prevVideoASrcRef = useRef("");
+  const prevVideoBSrcRef = useRef("");
+
   const uiWpMind = useUiButtonSounds();
   const uiWpSure = useUiButtonSounds();
   const uiFarewellDismiss = useUiButtonSounds();
@@ -250,6 +256,30 @@ export function PostEnvelopeScene({
     const id = window.setTimeout(() => setChoicesVisible(true), ms);
     return () => window.clearTimeout(id);
   }, [introFromFlash, reducedMotion, videoFailed]);
+
+  useEffect(() => {
+    const prev = prevVideoASrcRef.current;
+    if (videoASrc !== HARBOR_VIDEO_SRC) {
+      prevVideoASrcRef.current = videoASrc;
+      setShowHarborStillA(false);
+      return;
+    }
+    const arrived = prev !== HARBOR_VIDEO_SRC;
+    prevVideoASrcRef.current = videoASrc;
+    if (arrived) setShowHarborStillA(true);
+  }, [videoASrc]);
+
+  useEffect(() => {
+    const prev = prevVideoBSrcRef.current;
+    if (videoBSrc !== HARBOR_VIDEO_SRC) {
+      prevVideoBSrcRef.current = videoBSrc;
+      setShowHarborStillB(false);
+      return;
+    }
+    const arrived = prev !== HARBOR_VIDEO_SRC;
+    prevVideoBSrcRef.current = videoBSrc;
+    if (arrived) setShowHarborStillB(true);
+  }, [videoBSrc]);
 
   /** Crossfade από τρέχον harbor lead → άλλο layer με scene_2 (ίδια ιδέα με το loop). */
   useEffect(() => {
@@ -625,6 +655,13 @@ export function PostEnvelopeScene({
     void refA.current?.play().catch(() => {});
   }, []);
 
+  const onHarborPlayingA = useCallback(() => {
+    setShowHarborStillA(false);
+  }, []);
+  const onHarborPlayingB = useCallback(() => {
+    setShowHarborStillB(false);
+  }, []);
+
   useEffect(() => {
     return () => {
       stopFadeAnims();
@@ -827,17 +864,18 @@ export function PostEnvelopeScene({
       >
         <motion.div className="absolute inset-0" style={{ opacity: opA }}>
           {/*
-            Single <video> per slot so src changes (e.g. scene_3 → harbor on «I changed my mind») update in-place
-            instead of remounting a new tag — avoids ~1s blank while the element re-buffers.
+            Single <video> per slot so src changes (e.g. scene_3 → harbor) update in-place.
+            `harbor_scene.webp` overlay until `onPlaying`: MP4 can paint black before decode; poster alone is unreliable.
           */}
           <div className="absolute inset-0 overflow-hidden">
             <video
               ref={refA}
               src={videoASrc}
               className={
-                videoAIsScene2
+                (videoAIsHarbor ? "z-0 " : "") +
+                (videoAIsScene2
                   ? "absolute left-0 right-0 w-full object-cover object-top"
-                  : "absolute inset-0 h-full w-full object-cover"
+                  : "absolute inset-0 h-full w-full object-cover")
               }
               style={
                 videoAIsScene2
@@ -854,10 +892,21 @@ export function PostEnvelopeScene({
               preload="auto"
               aria-hidden
               onLoadedData={videoAIsHarbor ? onLoadedA : undefined}
+              onPlaying={videoAIsHarbor ? onHarborPlayingA : undefined}
               onTimeUpdate={onTime("a")}
               onEnded={onEndedA}
               onError={() => onVideoError("a")}
             />
+            {videoAIsHarbor && showHarborStillA ? (
+              <img
+                src={HARBOR_VIDEO_POSTER_SRC}
+                alt=""
+                aria-hidden
+                draggable={false}
+                decoding="async"
+                className="pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover select-none"
+              />
+            ) : null}
           </div>
         </motion.div>
         <motion.div className="absolute inset-0" style={{ opacity: opB }}>
@@ -866,9 +915,10 @@ export function PostEnvelopeScene({
               ref={refB}
               src={videoBSrc}
               className={
-                videoBIsScene2
+                (videoBIsHarbor ? "z-0 " : "") +
+                (videoBIsScene2
                   ? "absolute left-0 right-0 w-full object-cover object-top"
-                  : "absolute inset-0 h-full w-full object-cover"
+                  : "absolute inset-0 h-full w-full object-cover")
               }
               style={
                 videoBIsScene2
@@ -884,10 +934,21 @@ export function PostEnvelopeScene({
               playsInline
               preload="auto"
               aria-hidden
+              onPlaying={videoBIsHarbor ? onHarborPlayingB : undefined}
               onTimeUpdate={onTime("b")}
               onEnded={onEndedB}
               onError={() => onVideoError("b")}
             />
+            {videoBIsHarbor && showHarborStillB ? (
+              <img
+                src={HARBOR_VIDEO_POSTER_SRC}
+                alt=""
+                aria-hidden
+                draggable={false}
+                decoding="async"
+                className="pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover select-none"
+              />
+            ) : null}
           </div>
         </motion.div>
       </motion.div>

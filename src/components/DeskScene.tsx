@@ -518,7 +518,7 @@ export function DeskScene({ reducedMotion, deskLoopRef }: Props) {
                 <div className="desk-cinematic-narrative__copy space-y-3 text-balance">
                   <p className="font-medium tracking-tight">Η επιλογή σου στάλθηκε στον Kouki.</p>
                   <p className="text-[0.92em] opacity-[0.92]">
-                    Σε ευχαριστούμε που αφιέρωσες λίγο χρόνο εδώ — σημαίνει πολύ. Καλή συνέχεια.
+                    Σε ευχαριστούμε που αφιέρωσες λίγο χρόνο εδώ — σημαίνει πολλά. Καλή συνέχεια.
                   </p>
                 </div>
               ) : (

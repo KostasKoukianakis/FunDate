@@ -38,8 +38,8 @@ import {
 import { notifyHarborChoiceConfirmed } from "../lib/notifyHarborChoice";
 
 const HARBOR_VIDEO_SRC = "/harbor_scene.mp4";
-/** Shown until first decoded frame (same hero still as LoadingGate — avoids black flash). */
-const HARBOR_VIDEO_POSTER_SRC = "/hero.webp";
+/** Still frame until first MP4 frame (match `public/harbor_scene.webp`). */
+const HARBOR_VIDEO_POSTER_SRC = "/harbor_scene.webp";
 const SCENE_2_SRC = "/scene_2.mp4";
 const SCENE_3_SRC = "/scene_3.mp4";
 /** Pixels: κρύβουμε top watermark — overflow + shift (όχι clip-path, για να μη φαίνεται μαύρο). */

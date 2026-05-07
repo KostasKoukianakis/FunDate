@@ -25,14 +25,14 @@ const ENVELOPE_FILTER_LIFTED =
 /** Φάκελος κεντραρισμένος στο (--hx,--hy)· το indicator είναι absolute πάνω του. */
 export function EnvelopeHotspot({ reducedMotion, onOpen }: Props) {
   const hoverGate = useRef(false);
-  const [imgSrc, setImgSrc] = useState(ENVELOPE_FALLBACK);
+  const [imgSrc, setImgSrc] = useState(ENVELOPE_PRIMARY);
   const [hoverImgOk, setHoverImgOk] = useState(false);
   const [lifted, setLifted] = useState(false);
 
   useEffect(() => {
     const probe = new Image();
-    probe.onload = () => setImgSrc(ENVELOPE_PRIMARY);
-    probe.onerror = () => {};
+    probe.onload = () => {};
+    probe.onerror = () => setImgSrc(ENVELOPE_FALLBACK);
     probe.src = ENVELOPE_PRIMARY;
   }, []);
 

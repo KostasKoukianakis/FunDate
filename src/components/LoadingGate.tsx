@@ -11,8 +11,8 @@ import {
   HI_ELECTRA_SEQUENCE_MS,
   HI_ELECTRA_SEQUENCE_MS_HERO_VIDEO,
 } from "./HiElectraTitleMark";
+import { decodeAllDeskScenePrewarmImages, waitImageDecode } from "../lib/deskScenePrewarm";
 
-const DESK_SRC = "/desk.png";
 const HERO_POSTER_SRC = "/hero.webp";
 const HERO_VIDEO_SRC = "/hero_video.mp4";
 
@@ -22,23 +22,6 @@ type Props = {
   /** Σύγχρονο `play()` για το desk loop στο ίδιο gesture με intro (autoplay policy). */
   onUserAudioPrime?: () => void;
 };
-
-function waitImageDecode(src: string): Promise<void> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    const done = () => resolve();
-    img.onload = () => {
-      const p = img.decode?.();
-      if (p !== undefined) {
-        void p.then(done).catch(done);
-      } else {
-        done();
-      }
-    };
-    img.onerror = done;
-    img.src = src;
-  });
-}
 
 function waitVideoCanPlay(video: HTMLVideoElement | null): Promise<void> {
   return new Promise((resolve) => {
@@ -78,6 +61,11 @@ export function LoadingGate({ reducedMotion, onReady, onUserAudioPrime }: Props)
     tapConsumed.current = false;
   }, []);
 
+  /** Start desk/envelope/option decode as soon as the loader mounts (parallel with hero / tap). */
+  useEffect(() => {
+    void decodeAllDeskScenePrewarmImages();
+  }, []);
+
   /** Reduced motion: ίδια ροή με ήχο intro + στατικός τίτλος. */
   useEffect(() => {
     if (!reducedMotion) return;
@@ -106,7 +94,7 @@ export function LoadingGate({ reducedMotion, onReady, onUserAudioPrime }: Props)
     if (!reducedMotion) return;
     let cancelled = false;
     void (async () => {
-      await Promise.all([waitImageDecode(DESK_SRC), waitImageDecode(HERO_POSTER_SRC)]);
+      await Promise.all([waitImageDecode(HERO_POSTER_SRC), decodeAllDeskScenePrewarmImages()]);
       await new Promise<void>((r) => {
         window.setTimeout(r, HI_ELECTRA_SEQUENCE_MS);
       });
@@ -122,8 +110,10 @@ export function LoadingGate({ reducedMotion, onReady, onUserAudioPrime }: Props)
     if (reducedMotion || !tapDone) return;
     let cancelled = false;
     void (async () => {
-      await waitImageDecode(DESK_SRC);
-      await waitVideoCanPlay(heroVideoRef.current);
+      await Promise.all([
+        decodeAllDeskScenePrewarmImages(),
+        waitVideoCanPlay(heroVideoRef.current),
+      ]);
       await new Promise<void>((r) => {
         window.setTimeout(r, HI_ELECTRA_SEQUENCE_MS_HERO_VIDEO);
       });

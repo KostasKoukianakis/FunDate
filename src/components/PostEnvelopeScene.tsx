@@ -26,7 +26,7 @@ import {
 } from "./EnvelopeFlashTransition";
 import { HarborChoiceOverlay, type HarborChoiceKey } from "./HarborChoiceOverlay";
 import { SceneReplayButton } from "./SceneReplayButton";
-import { SceneSkipToEndButton } from "./SceneSkipToEndButton";
+// import { SceneSkipToEndButton } from "./SceneSkipToEndButton";
 import { useUiButtonSounds } from "../hooks/useUiButtonSounds";
 import { playWaterPopSound } from "../audio/sfx";
 import {
@@ -38,6 +38,8 @@ import {
 import { notifyHarborChoiceConfirmed } from "../lib/notifyHarborChoice";
 
 const HARBOR_VIDEO_SRC = "/harbor_scene.mp4";
+/** Shown until first decoded frame (same hero still as LoadingGate — avoids black flash). */
+const HARBOR_VIDEO_POSTER_SRC = "/hero.webp";
 const SCENE_2_SRC = "/scene_2.mp4";
 const SCENE_3_SRC = "/scene_3.mp4";
 /** Pixels: κρύβουμε top watermark — overflow + shift (όχι clip-path, για να μη φαίνεται μαύρο). */
@@ -639,35 +641,35 @@ export function PostEnvelopeScene({
     [videoASrc, videoBSrc],
   );
 
-  /** Άλμα στο τελικό loop (scene_3) — χωρίς αναμονή harbor / scene_2. */
-  const skipToFinalScene = useCallback(() => {
-    stopFadeAnims();
-    fadingRef.current = false;
-    scene3CrossfadeStartedRef.current = true;
-    setChoicesVisible(false);
-    setScene2NarrativeFadeOut(false);
-    scene2NarrativeFadeLatchedRef.current = false;
-    setScene3OverlayRevealReady(false);
-    setIsWpFarewell(false);
-    setTextOverlaysHidden(false);
-    setScene2Failed(false);
-    setScene3Failed(false);
-    setScene3Mode(true);
-    setScene3TransitionId(0);
-    setScene2Track(null);
-    setHarborPick((h) => {
-      if (h === null) onHarborChoice?.("shore");
-      return h ?? "shore";
-    });
-    setVideoASrc(SCENE_3_SRC);
-    setVideoBSrc(SCENE_3_SRC);
-    leadingRef.current = "a";
-    opA.set(1);
-    opB.set(0);
-    requestAnimationFrame(() => {
-      void refA.current?.play().catch(() => {});
-    });
-  }, [onHarborChoice, stopFadeAnims]);
+  /** Άλμα στο τελικό loop (scene_3) — χωρίς αναμονή harbor / scene_2. (Skip HUD disabled.) */
+  // const skipToFinalScene = useCallback(() => {
+  //   stopFadeAnims();
+  //   fadingRef.current = false;
+  //   scene3CrossfadeStartedRef.current = true;
+  //   setChoicesVisible(false);
+  //   setScene2NarrativeFadeOut(false);
+  //   scene2NarrativeFadeLatchedRef.current = false;
+  //   setScene3OverlayRevealReady(false);
+  //   setIsWpFarewell(false);
+  //   setTextOverlaysHidden(false);
+  //   setScene2Failed(false);
+  //   setScene3Failed(false);
+  //   setScene3Mode(true);
+  //   setScene3TransitionId(0);
+  //   setScene2Track(null);
+  //   setHarborPick((h) => {
+  //     if (h === null) onHarborChoice?.("shore");
+  //     return h ?? "shore";
+  //   });
+  //   setVideoASrc(SCENE_3_SRC);
+  //   setVideoBSrc(SCENE_3_SRC);
+  //   leadingRef.current = "a";
+  //   opA.set(1);
+  //   opB.set(0);
+  //   requestAnimationFrame(() => {
+  //     void refA.current?.play().catch(() => {});
+  //   });
+  // }, [onHarborChoice, stopFadeAnims]);
 
   /** Επιστροφή στο harbor loop + επιλογές (από WP confirm «I changed my mind»). */
   const resetToHarborScene = useCallback(() => {
@@ -860,6 +862,7 @@ export function PostEnvelopeScene({
               key={videoASrc}
               className="absolute inset-0 h-full w-full object-cover"
               src={videoASrc}
+              poster={videoASrc === HARBOR_VIDEO_SRC ? HARBOR_VIDEO_POSTER_SRC : undefined}
               autoPlay={videoASrc === HARBOR_VIDEO_SRC}
               muted
               playsInline
@@ -914,6 +917,7 @@ export function PostEnvelopeScene({
               key={videoBSrc}
               className="absolute inset-0 h-full w-full object-cover"
               src={videoBSrc}
+              poster={videoBSrc === HARBOR_VIDEO_SRC ? HARBOR_VIDEO_POSTER_SRC : undefined}
               muted
               playsInline
               preload="auto"
@@ -1138,7 +1142,9 @@ export function PostEnvelopeScene({
       {onReplay ? (
         <div className={`${replayHudAnchorClass} flex flex-col items-start gap-2`}>
           <SceneReplayButton reducedMotion={reducedMotion} onReplay={handleHudReplay} />
+          {/* Skip-to-scene-3 HUD disabled for ship build
           {!scene3Mode ? <SceneSkipToEndButton reducedMotion={reducedMotion} onSkip={skipToFinalScene} /> : null}
+          */}
         </div>
       ) : null}
     </>

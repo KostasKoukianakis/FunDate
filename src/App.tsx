@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { AnimatePresence, useReducedMotion } from "framer-motion";
 import { DeskScene } from "./components/DeskScene";
+import { HarborVideoPrefetch } from "./components/HarborVideoPrefetch";
 import { LoadingGate } from "./components/LoadingGate";
 import { OrbCursor } from "./components/OrbCursor";
 
@@ -36,7 +37,12 @@ export default function App() {
         aria-hidden
       />
       <OrbCursor />
-      {sceneReady ? <DeskScene reducedMotion={!!sysReducedMotion} deskLoopRef={deskLoopRef} /> : null}
+      {sceneReady ? (
+        <>
+          <HarborVideoPrefetch />
+          <DeskScene reducedMotion={!!sysReducedMotion} deskLoopRef={deskLoopRef} />
+        </>
+      ) : null}
 
       <AnimatePresence>
         {loaderMounted ? (

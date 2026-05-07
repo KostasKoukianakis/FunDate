@@ -16,6 +16,8 @@
       href="https://fonts.googleapis.com/css2?family=Playwrite+DE+SAS:wght@100..400&display=swap"
       rel="stylesheet"
     />
+    <!-- Harbor loop: start fetch early so PostEnvelope isn’t ~1s black on first open -->
+    <link rel="preload" href="/harbor_scene.mp4" as="video" type="video/mp4" />
   </head>
   <body>
     <div id="root"></div>
